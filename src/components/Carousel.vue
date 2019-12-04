@@ -79,13 +79,6 @@ export default {
   },
   props: {
     /**
-     * Flag to make the carousel loop around when it reaches the end
-     */
-    loop: {
-      type: Boolean,
-      default: false
-    },
-    /**
      * Amount of padding to apply around the label in pixels
      */
     navigationClickTargetSize: {
@@ -183,18 +176,6 @@ export default {
   },
   computed: {
     /**
-     * @return {Boolean} Can the slider move forward?
-     */
-    canAdvanceForward() {
-      return this.loop || this.offset < this.maxOffset;
-    },
-    /**
-     * @return {Boolean} Can the slider move backward?
-     */
-    canAdvanceBackward() {
-      return this.loop || this.currentPage > 0;
-    },
-    /**
      * The horizontal distance the inner wrapper is offset while navigating.
      * @return {Number} Pixel value of offset to apply
      */
@@ -235,7 +216,7 @@ export default {
       if (this.currentPage < this.pageCount - 1) {
         return this.currentPage + 1;
       }
-      return this.loop ? 0 : this.currentPage;
+      return 0;
     },
     /**
      * @return {Number} The index of the previous page
@@ -244,19 +225,16 @@ export default {
       if (this.currentPage > 0) {
         return this.currentPage - 1;
       }
-      return this.loop ? this.pageCount - 1 : this.currentPage;
+      return this.pageCount - 1;
     },
     /**
      * Increase/decrease the current page value
      * @param  {String} direction (Optional) The direction to advance
      */
     advancePage(direction) {
-      if (direction && direction === 'backward' && this.canAdvanceBackward) {
+      if (direction && direction === 'backward') {
         this.goToPage(this.getPreviousPage(), 'navigation');
-      } else if (
-        (!direction || (direction && direction !== 'backward')) &&
-        this.canAdvanceForward
-      ) {
+      } else if (!direction || (direction && direction !== 'backward')) {
         this.goToPage(this.getNextPage(), 'navigation');
       }
     },
