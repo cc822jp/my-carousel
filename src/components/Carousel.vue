@@ -11,7 +11,7 @@
         ]"
         :style="{
           transform: `translate(${currentOffset}px, 0)`,
-          transition: dragging ? 'none' : transitionStyle,
+          transition: transitionStyle,
           'ms-flex-preferred-size': `${slideWidth}px`,
           'webkit-flex-basis': `${slideWidth}px`,
           'flex-basis': `${slideWidth}px`,
@@ -71,12 +71,6 @@ export default {
       browserWidth: null,
       carouselWidth: 0,
       currentPage: 0,
-      dragging: false,
-      dragMomentum: 0,
-      dragOffset: 0,
-      dragStartY: 0,
-      dragStartX: 0,
-      isTouch: typeof window !== 'undefined' && 'ontouchstart' in window,
       offset: 0,
       refreshRate: 16,
       slideCount: 0,
@@ -98,13 +92,6 @@ export default {
      */
     easing: {
       type: String,
-      validator: function(value) {
-        return (
-          ['ease', 'linear', 'ease-in', 'ease-out', 'ease-in-out'].indexOf(
-            value
-          ) !== -1 || value.includes('cubic-bezier')
-        );
-      },
       default: 'ease'
     },
     /**
@@ -113,28 +100,6 @@ export default {
     loop: {
       type: Boolean,
       default: false
-    },
-    /**
-     * Minimum distance for the swipe to trigger
-     * a slide advance
-     */
-    minSwipeDistance: {
-      type: Number,
-      default: 8
-    },
-    /**
-     * Flag to toggle mouse dragging
-     */
-    mouseDrag: {
-      type: Boolean,
-      default: true
-    },
-    /**
-     * Flag to toggle touch dragging
-     */
-    touchDrag: {
-      type: Boolean,
-      default: true
     },
     /**
      * Amount of padding to apply around the label in pixels
@@ -220,14 +185,6 @@ export default {
       default: 2
     },
     /**
-     * Resistance coefficient to dragging on the edge of the carousel
-     * This dictates the effect of the pull as you move towards the boundaries
-     */
-    resistanceCoef: {
-      type: Number,
-      default: 20
-    },
-    /**
      * Slide transition speed
      * Number of milliseconds accepted
      */
@@ -296,7 +253,7 @@ export default {
      * @return {Number} Pixel value of offset to apply
      */
     currentOffset() {
-      return (this.offset + this.dragOffset) * -1;
+      return this.offset * -1;
     },
     /**
      * Maximum offset the carousel can slide
@@ -473,107 +430,12 @@ export default {
         }
       }
     },
-    /**
-     * Trigger actions when mouse is pressed
-     * @param  {Object} e The event object
-     */
-    /* istanbul ignore next */
-    onStart(e) {
-      // alert("start");
-
-      // detect right click
-      if (e.button == 2) {
-        return;
-      }
-
-      document.addEventListener(
-        this.isTouch ? 'touchend' : 'mouseup',
-        this.onEnd,
-        true
-      );
-
-      document.addEventListener(
-        this.isTouch ? 'touchmove' : 'mousemove',
-        this.onDrag,
-        true
-      );
-
-      this.startTime = e.timeStamp;
-      this.dragging = true;
-      this.dragStartX = this.isTouch ? e.touches[0].clientX : e.clientX;
-      this.dragStartY = this.isTouch ? e.touches[0].clientY : e.clientY;
-    },
-    /**
-     * Trigger actions when mouse is released
-     * @param  {Object} e The event object
-     */
-
-    onEnd(e) {
-      // compute the momemtum speed
-      const eventPosX = this.isTouch ? e.changedTouches[0].clientX : e.clientX;
-      const deltaX = this.dragStartX - eventPosX;
-      this.dragMomentum = deltaX / (e.timeStamp - this.startTime);
-
-      // take care of the minSwipteDistance prop, if not 0 and delta is bigger than delta
-      if (
-        this.minSwipeDistance !== 0 &&
-        Math.abs(deltaX) >= this.minSwipeDistance
-      ) {
-        const width = this.slideWidth;
-        this.dragOffset = this.dragOffset + Math.sign(deltaX) * (width / 2);
-      }
-
-      this.offset += this.dragOffset;
-      this.dragOffset = 0;
-      this.dragging = false;
-
-      this.render();
-
-      // clear events listeners
-      document.removeEventListener(
-        this.isTouch ? 'touchend' : 'mouseup',
-        this.onEnd,
-        true
-      );
-      document.removeEventListener(
-        this.isTouch ? 'touchmove' : 'mousemove',
-        this.onDrag,
-        true
-      );
-    },
-    /**
-     * Trigger actions when mouse is pressed and then moved (mouse drag)
-     * @param  {Object} e The event object
-     */
-    onDrag(e) {
-      const eventPosX = this.isTouch ? e.touches[0].clientX : e.clientX;
-      const eventPosY = this.isTouch ? e.touches[0].clientY : e.clientY;
-      const newOffsetX = this.dragStartX - eventPosX;
-      const newOffsetY = this.dragStartY - eventPosY;
-
-      // if it is a touch device, check if we are below the min swipe threshold
-      // (if user scroll the page on the component)
-      if (this.isTouch && Math.abs(newOffsetX) < Math.abs(newOffsetY)) {
-        return;
-      }
-
-      e.stopImmediatePropagation();
-
-      this.dragOffset = newOffsetX;
-      const nextOffset = this.offset + this.dragOffset;
-
-      if (nextOffset < 0) {
-        this.dragOffset = -Math.sqrt(-this.resistanceCoef * this.dragOffset);
-      } else if (nextOffset > this.maxOffset) {
-        this.dragOffset = Math.sqrt(this.resistanceCoef * this.dragOffset);
-      }
-    },
     render() {
       // add extra slides depending on the momemtum speed
       this.offset +=
         Math.max(
           -this.currentPerPage + 1,
-          Math.min(Math.round(this.dragMomentum), this.currentPerPage - 1)
+          Math.min(this.currentPerPage - 1)
         ) * this.slideWidth;
 
       const width = this.slideWidth;
@@ -620,14 +482,6 @@ export default {
     }
   },
   mounted() {
-    // setup the start event only if touch device or mousedrag activated
-    if ((this.isTouch && this.touchDrag) || this.mouseDrag) {
-      this.$refs['VueCarousel-wrapper'].addEventListener(
-        this.isTouch ? 'touchstart' : 'mousedown',
-        this.onStart
-      );
-    }
-
     this.attachMutationObserver();
     this.computeCarouselWidth();
     this.computeCarouselHeight();
@@ -654,11 +508,6 @@ export default {
     this.$refs['VueCarousel-inner'].removeEventListener(
       this.transitionend,
       this.handleTransitionEnd
-    );
-
-    this.$refs['VueCarousel-wrapper'].removeEventListener(
-      this.isTouch ? 'touchstart' : 'mousedown',
-      this.onStart
     );
   }
 };
