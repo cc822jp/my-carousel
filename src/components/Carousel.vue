@@ -10,7 +10,7 @@
           'ms-flex-preferred-size': `${slideWidth}px`,
           'webkit-flex-basis': `${slideWidth}px`,
           'flex-basis': `${slideWidth}px`,
-          visibility: slideWidth ? 'visible' : 'hidden',
+          visibility: slideWidth ? 'visible' : 'hidden'
         }"
       >
         <slot></slot>
@@ -18,10 +18,8 @@
     </div>
 
     <navigation
-      :clickTargetSize="8"
-      :nextLabel="navigationNextLabel"
-      :prevLabel="navigationPrevLabel"
-      @navigationclick="handleNavigation"
+      @navigation-click-prev="handleNavigationPrev"
+      @navigation-click-next="handleNavigationNext"
     />
 
     <pagination @paginationclick="goToPage($event, 'pagination')" />
@@ -42,7 +40,7 @@ export default {
       carouselWidth: 0,
       currentPage: 0,
       offset: 0,
-      slideCount: 0,
+      slideCount: 0
     };
   },
   // use `provide` to avoid `Slide` being nested with other components
@@ -52,20 +50,6 @@ export default {
     };
   },
   props: {
-    /**
-     * Text content of the navigation next button
-     */
-    navigationNextLabel: {
-      type: String,
-      default: '&#9654'
-    },
-    /**
-     * Text content of the navigation prev button
-     */
-    navigationPrevLabel: {
-      type: String,
-      default: '&#9664'
-    },
     /**
      * The fill color of the active pagination dot
      * Any valid CSS color is accepted
@@ -168,20 +152,11 @@ export default {
       }
       return this.pageCount - 1;
     },
-    /**
-     * Increase/decrease the current page value
-     * @param  {String} direction (Optional) The direction to advance
-     */
-    advancePage(direction) {
-      if (direction && direction === 'backward') {
-        this.goToPage(this.getPreviousPage(), 'navigation');
-      } else if (!direction || (direction && direction !== 'backward')) {
-        this.goToPage(this.getNextPage(), 'navigation');
-      }
+    handleNavigationPrev() {
+      this.goToPage(this.getPreviousPage());
     },
-    handleNavigation(direction) {
-      this.advancePage(direction);
-      this.$emit('navigation-click', direction);
+    handleNavigationNext() {
+      this.goToPage(this.getNextPage());
     },
     /**
      * Get the width of the carousel DOM element
@@ -213,24 +188,9 @@ export default {
           ).length) ||
         0;
     },
-    /**
-     * Set the current page to a specific value
-     * This function will only apply the change if the value is within the carousel bounds
-     * for carousel scrolling per page.
-     * @param  {Number} page The value of the new page number
-     * @param  {string|undefined} advanceType An optional value describing the type of page advance
-     */
-    goToPage(page, advanceType) {
-      if (page >= 0 && page <= this.pageCount) {
-        this.offset = this.slideWidth * page;
-
-        // update the current page
-        this.currentPage = page;
-
-        if (advanceType === 'pagination') {
-          this.$emit('pagination-click', page);
-        }
-      }
+    goToPage(page) {
+      this.offset = this.slideWidth * page;
+      this.currentPage = page;
     },
     render() {
       // add extra slides depending on the momemtum speed
@@ -240,7 +200,8 @@ export default {
 
       // lock offset to either the nearest page, or to the last slide
       const lastFullPageOffset = width;
-      const remainderOffset = lastFullPageOffset + this.slideWidth * this.slideCount;
+      const remainderOffset =
+        lastFullPageOffset + this.slideWidth * this.slideCount;
       if (this.offset > (lastFullPageOffset + remainderOffset) / 2) {
         this.offset = remainderOffset;
       } else {

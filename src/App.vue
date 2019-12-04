@@ -1,20 +1,18 @@
 <template>
   <div id="app">
-    <div class="carousel">
-      <carousel :navigation-enabled="true">
-        <slide>
-          <a href="http://www.google.com" target="_blank">
-            <img class="img" src="./assets/1.png">
-          </a>
-        </slide>
-        <slide>
-          <img class="img" src="./assets/2.png">
-        </slide>
-        <slide>
-          <img class="img" src="./assets/3.png">
-        </slide>
-      </carousel>
-    </div>
+    <carousel>
+      <slide>
+        <a href="http://www.google.com" target="_blank">
+          <img class="img" src="./assets/1.png" />
+        </a>
+      </slide>
+      <slide>
+        <img class="img" src="./assets/2.png" />
+      </slide>
+      <slide>
+        <img class="img" src="./assets/3.png" />
+      </slide>
+    </carousel>
   </div>
 </template>
 
@@ -32,14 +30,8 @@ export default {
 </script>
 
 <style>
-  .carousel {
-    width: 80%;
-    max-width: 800px;
-    margin: 0 auto;
-  }
-
-  .img {
-    display: block;
-    width: 100%;
-  }
+.img {
+  display: block;
+  width: 100%;
+}
 </style>

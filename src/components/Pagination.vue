@@ -1,8 +1,5 @@
 <template>
-  <div
-    v-show="carousel.pageCount > 1"
-    class="VueCarousel-pagination"
-  >
+  <div v-show="carousel.pageCount > 1" class="VueCarousel-pagination">
     <div
       class="VueCarousel-dot-container"
       role="tablist"
@@ -38,9 +35,9 @@ export default {
     },
     dotContainerStyle() {
       const { carousel } = this;
-        return {
-          'margin-top': `${carousel.paginationPadding * 2}px`
-        };
+      return {
+        'margin-top': `${carousel.paginationPadding * 2}px`
+      };
     }
   },
   methods: {
