@@ -1,8 +1,7 @@
 <template>
   <div id="app">
-
     <div class="carousel">
-      <carousel :per-page="1">
+      <carousel :per-page="1" :navigation-enabled="true" :loop="true">
         <slide>
           <img class="img" src="./assets/1.png">
         </slide>
@@ -13,9 +12,7 @@
           <img class="img" src="./assets/3.png">
         </slide>
       </carousel>
-
     </div>
-
   </div>
 </template>
 

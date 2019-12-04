@@ -7,8 +7,7 @@
       <div
         ref="VueCarousel-inner"
         :class="[
-          'VueCarousel-inner',
-          { 'VueCarousel-inner--center': isCenterModeEnabled }
+          'VueCarousel-inner'
         ]"
         :style="{
           transform: `translate(${currentOffset}px, 0)`,
@@ -18,8 +17,6 @@
           'flex-basis': `${slideWidth}px`,
           visibility: slideWidth ? 'visible' : 'hidden',
           height: `${currentHeight}`,
-          'padding-left': `${padding}px`,
-          'padding-right': `${padding}px`
         }"
       >
         <slot></slot>
@@ -42,8 +39,6 @@
   </div>
 </template>
 <script>
-import autoplay from '../mixins/autoplay';
-import debounce from '../utils/debounce';
 import Navigation from './Navigation.vue';
 import Pagination from './Pagination.vue';
 
@@ -90,7 +85,6 @@ export default {
       currentHeight: 'auto'
     };
   },
-  mixins: [autoplay],
   // use `provide` to avoid `Slide` being nested with other components
   provide() {
     return {
@@ -98,27 +92,6 @@ export default {
     };
   },
   props: {
-    /**
-     *  Adjust the height of the carousel for the current slide
-     */
-    adjustableHeight: {
-      type: Boolean,
-      default: false
-    },
-    /**
-     * Slide transition easing for adjustableHeight
-     * Any valid CSS transition easing accepted
-     */
-    adjustableHeightEasing: {
-      type: String
-    },
-    /**
-     *  Center images when the size is less than the container width
-     */
-    centerMode: {
-      type: Boolean,
-      default: false
-    },
     /**
      * Slide transition easing
      * Any valid CSS transition easing accepted
@@ -162,13 +135,6 @@ export default {
     touchDrag: {
       type: Boolean,
       default: true
-    },
-    /**
-     * Listen for an external navigation request using this prop.
-     */
-    navigateTo: {
-      type: [Number, Array],
-      default: 0
     },
     /**
      * Amount of padding to apply around the label in pixels
@@ -254,42 +220,12 @@ export default {
       default: 2
     },
     /**
-     * Configure the number of visible slides with a particular browser width.
-     * This will be an array of arrays, ex. [[320, 2], [1199, 4]]
-     * Formatted as [x, y] where x=browser width, and y=number of slides displayed.
-     * ex. [1199, 4] means if (window <= 1199) then show 4 slides per page
-     */
-    perPageCustom: {
-      type: Array
-    },
-    /**
      * Resistance coefficient to dragging on the edge of the carousel
      * This dictates the effect of the pull as you move towards the boundaries
      */
     resistanceCoef: {
       type: Number,
       default: 20
-    },
-    /**
-     * Scroll per page, not per item
-     */
-    scrollPerPage: {
-      type: Boolean,
-      default: true
-    },
-    /**
-     *  Space padding option adds left and right padding style (in pixels) onto VueCarousel-inner.
-     */
-    spacePadding: {
-      type: Number,
-      default: 0
-    },
-    /**
-     *  Specify by how much should the space padding value be multiplied of, to re-arange the final slide padding.
-     */
-    spacePaddingMaxOffsetFactor: {
-      type: Number,
-      default: 0
     },
     /**
      * Slide transition speed
@@ -319,13 +255,6 @@ export default {
     maxPaginationDotCount: {
       type: Number,
       default: -1
-    },
-    /**
-     * Support right to left
-     */
-    rtl: {
-      type: Boolean,
-      default: false
     }
   },
   watch: {
@@ -335,72 +264,13 @@ export default {
         this.render();
       }
     },
-    navigateTo: {
-      immediate: true,
-      handler(val) {
-        // checking if val is an array, for arrays typeof returns object
-        if (typeof val === 'object') {
-          if (val[1] == false) {
-            // following code is to disable animation
-            this.dragging = true;
-
-            // clear dragging after refresh rate
-            setTimeout(() => {
-              this.dragging = false;
-            }, this.refreshRate);
-          }
-
-          this.$nextTick(() => {
-            this.goToPage(val[0]);
-          });
-        } else {
-          this.$nextTick(() => {
-            this.goToPage(val);
-          });
-        }
-      }
-    },
     currentPage(val) {
       this.$emit('pageChange', val);
       this.$emit('page-change', val);
       this.$emit('input', val);
-    },
-    autoplay(val) {
-      if (val === false) {
-        this.pauseAutoplay();
-      } else {
-        this.restartAutoplay();
-      }
     }
   },
   computed: {
-    /**
-     * Given a viewport width, find the number of slides to display
-     * @param  {Number} width Current viewport width in pixels
-     * @return {Number} Number of slides to display
-     */
-    breakpointSlidesPerPage() {
-      if (!this.perPageCustom) {
-        return this.perPage;
-      }
-
-      const breakpointArray = this.perPageCustom;
-      const width = this.browserWidth;
-
-      const breakpoints = breakpointArray.sort((a, b) =>
-        a[0] > b[0] ? -1 : 1
-      );
-
-      // Reduce the breakpoints to entries where the width is in range
-      // The breakpoint arrays are formatted as [widthToMatch, numberOfSlides]
-      const matches = breakpoints.filter(breakpoint => width >= breakpoint[0]);
-
-      // If there is a match, the result should return only
-      // the slide count from the first matching breakpoint
-      const match = matches[0] && matches[0][1];
-
-      return match || this.perPage;
-    },
     /**
      * @return {Boolean} Can the slider move forward?
      */
@@ -419,53 +289,35 @@ export default {
      * @return {Number} The number of slides per page to display
      */
     currentPerPage() {
-      return !this.perPageCustom || this.$isServer
-        ? this.perPage
-        : this.breakpointSlidesPerPage;
+      return this.perPage;
     },
     /**
      * The horizontal distance the inner wrapper is offset while navigating.
      * @return {Number} Pixel value of offset to apply
      */
     currentOffset() {
-      if (this.isCenterModeEnabled) {
-        return 0;
-      } else if (this.rtl) {
-        return (this.offset - this.dragOffset) * 1;
-      } else {
-        return (this.offset + this.dragOffset) * -1;
-      }
-    },
-    isHidden() {
-      return this.carouselWidth <= 0;
+      return (this.offset + this.dragOffset) * -1;
     },
     /**
      * Maximum offset the carousel can slide
-     * Considering the spacePadding
      * @return {Number}
      */
     maxOffset() {
-      return Math.max(
-        this.slideWidth * (this.slideCount - this.currentPerPage) -
-          this.spacePadding * this.spacePaddingMaxOffsetFactor,
-        0
-      );
+      return Math.max(this.slideWidth * (this.slideCount - this.currentPerPage), 0);
     },
     /**
      * Calculate the number of pages of slides
      * @return {Number} Number of pages
      */
     pageCount() {
-      return this.scrollPerPage
-        ? Math.ceil(this.slideCount / this.currentPerPage)
-        : this.slideCount - this.currentPerPage + 1;
+      return this.slideCount - this.currentPerPage + 1;
     },
     /**
      * Calculate the width of each slide
      * @return {Number} Slide width
      */
     slideWidth() {
-      const width = this.carouselWidth - this.spacePadding * 2;
+      const width = this.carouselWidth;
       const perPage = this.currentPerPage;
 
       return width / perPage;
@@ -476,25 +328,9 @@ export default {
     isNavigationRequired() {
       return this.slideCount > this.currentPerPage;
     },
-    /**
-     * @return {Boolean} Center images when have less than min currentPerPage value
-     */
-    isCenterModeEnabled() {
-      return this.centerMode && !this.isNavigationRequired;
-    },
     transitionStyle() {
       const speed = `${this.speed / 1000}s`;
-      const transtion = `${speed} ${this.easing} transform`;
-      if (this.adjustableHeight) {
-        return `${transtion}, height ${speed} ${this.adjustableHeightEasing ||
-          this.easing}`;
-      }
-
-      return transtion;
-    },
-    padding() {
-      const padding = this.spacePadding;
-      return padding > 0 ? padding : false;
+      return `${speed} ${this.easing} transform`;
     }
   },
   methods: {
@@ -530,19 +366,6 @@ export default {
         this.goToPage(this.getNextPage(), 'navigation');
       }
     },
-    goToLastSlide() {
-      // following code is to disable animation
-      this.dragging = true;
-
-      // clear dragging after refresh rate
-      setTimeout(() => {
-        this.dragging = false;
-      }, this.refreshRate);
-
-      this.$nextTick(() => {
-        this.goToPage(this.pageCount);
-      });
-    },
     /**
      * A mutation observer is used to detect changes to the containing node
      * in order to keep the magnet container in sync with the height its reference node.
@@ -558,14 +381,6 @@ export default {
           attributes: true,
           data: true
         };
-        if (this.adjustableHeight) {
-          config = {
-            ...config,
-            childList: true,
-            subtree: true,
-            characterData: true
-          };
-        }
         this.mutationObserver = new MutationObserver(() => {
           this.$nextTick(() => {
             this.computeCarouselWidth();
@@ -584,7 +399,6 @@ export default {
     },
     handleNavigation(direction) {
       this.advancePage(direction);
-      this.pauseAutoplay();
       this.$emit('navigation-click', direction);
     },
     /**
@@ -623,23 +437,7 @@ export default {
      * @return {String} The carousel height
      */
     getCarouselHeight() {
-      if (!this.adjustableHeight) {
-        return 'auto';
-      }
-
-      const slideOffset = this.currentPerPage * (this.currentPage + 1) - 1;
-      const maxSlideHeight = [...Array(this.currentPerPage)]
-        .map((_, idx) => this.getSlide(slideOffset + idx))
-        .reduce(
-          (clientHeight, slide) =>
-            Math.max(clientHeight, (slide && slide.$el.clientHeight) || 0),
-          0
-        );
-
-      this.currentHeight =
-        maxSlideHeight === 0 ? 'auto' : `${maxSlideHeight}px`;
-
-      return this.currentHeight;
+      return 'auto';
     },
     /**
      * Filter slot contents to slide instances and return length
@@ -657,18 +455,6 @@ export default {
         0;
     },
     /**
-     * Gets the slide at the specified index
-     * @return {Object} The slide at the specified index
-     */
-    getSlide(index) {
-      const slides = this.$children.filter(
-        child =>
-          child.$vnode.tag.match(`^vue-component-\\d+-${this.tagName}$`) !==
-          null
-      );
-      return slides[index];
-    },
-    /**
      * Set the current page to a specific value
      * This function will only apply the change if the value is within the carousel bounds
      * for carousel scrolling per page.
@@ -677,23 +463,12 @@ export default {
      */
     goToPage(page, advanceType) {
       if (page >= 0 && page <= this.pageCount) {
-        this.offset = this.scrollPerPage
-          ? Math.min(
-              this.slideWidth * this.currentPerPage * page,
-              this.maxOffset
-            )
-          : this.slideWidth * page;
-
-        // restart autoplay if specified
-        if (this.autoplay && !this.autoplayHoverPause) {
-          this.restartAutoplay();
-        }
+        this.offset = this.slideWidth * page;
 
         // update the current page
         this.currentPage = page;
 
         if (advanceType === 'pagination') {
-          this.pauseAutoplay();
           this.$emit('pagination-click', page);
         }
       }
@@ -734,12 +509,6 @@ export default {
      */
 
     onEnd(e) {
-      // restart autoplay if specified
-      if (this.autoplay && !this.autoplayHoverPause) {
-        this.restartAutoplay();
-      }
-      this.pauseAutoplay();
-
       // compute the momemtum speed
       const eventPosX = this.isTouch ? e.changedTouches[0].clientX : e.clientX;
       const deltaX = this.dragStartX - eventPosX;
@@ -750,17 +519,11 @@ export default {
         this.minSwipeDistance !== 0 &&
         Math.abs(deltaX) >= this.minSwipeDistance
       ) {
-        const width = this.scrollPerPage
-          ? this.slideWidth * this.currentPerPage
-          : this.slideWidth;
+        const width = this.slideWidth;
         this.dragOffset = this.dragOffset + Math.sign(deltaX) * (width / 2);
       }
 
-      if (this.rtl) {
-        this.offset -= this.dragOffset;
-      } else {
-        this.offset += this.dragOffset;
-      }
+      this.offset += this.dragOffset;
       this.dragOffset = 0;
       this.dragging = false;
 
@@ -799,51 +562,21 @@ export default {
       this.dragOffset = newOffsetX;
       const nextOffset = this.offset + this.dragOffset;
 
-      if (this.rtl) {
-        if (this.offset == 0 && this.dragOffset > 0) {
-          this.dragOffset = Math.sqrt(this.resistanceCoef * this.dragOffset);
-        } else if (this.offset == this.maxOffset && this.dragOffset < 0) {
-          this.dragOffset = -Math.sqrt(-this.resistanceCoef * this.dragOffset);
-        }
-      } else {
-        if (nextOffset < 0) {
-          this.dragOffset = -Math.sqrt(-this.resistanceCoef * this.dragOffset);
-        } else if (nextOffset > this.maxOffset) {
-          this.dragOffset = Math.sqrt(this.resistanceCoef * this.dragOffset);
-        }
+      if (nextOffset < 0) {
+        this.dragOffset = -Math.sqrt(-this.resistanceCoef * this.dragOffset);
+      } else if (nextOffset > this.maxOffset) {
+        this.dragOffset = Math.sqrt(this.resistanceCoef * this.dragOffset);
       }
-    },
-    onResize() {
-      this.computeCarouselWidth();
-      this.computeCarouselHeight();
-
-      this.dragging = true; // force a dragging to disable animation
-      this.render();
-      // clear dragging after refresh rate
-      setTimeout(() => {
-        this.dragging = false;
-      }, this.refreshRate);
     },
     render() {
       // add extra slides depending on the momemtum speed
-      if (this.rtl) {
-        this.offset -=
-          Math.max(
-            -this.currentPerPage + 1,
-            Math.min(Math.round(this.dragMomentum), this.currentPerPage - 1)
-          ) * this.slideWidth;
-      } else {
-        this.offset +=
-          Math.max(
-            -this.currentPerPage + 1,
-            Math.min(Math.round(this.dragMomentum), this.currentPerPage - 1)
-          ) * this.slideWidth;
-      }
+      this.offset +=
+        Math.max(
+          -this.currentPerPage + 1,
+          Math.min(Math.round(this.dragMomentum), this.currentPerPage - 1)
+        ) * this.slideWidth;
 
-      // & snap the new offset on a slide or page if scrollPerPage
-      const width = this.scrollPerPage
-        ? this.slideWidth * this.currentPerPage
-        : this.slideWidth;
+      const width = this.slideWidth;
 
       // lock offset to either the nearest page, or to the last slide
       const lastFullPageOffset =
@@ -861,9 +594,7 @@ export default {
       this.offset = Math.max(0, Math.min(this.offset, this.maxOffset));
 
       // update the current page
-      this.currentPage = this.scrollPerPage
-        ? Math.round(this.offset / this.slideWidth / this.currentPerPage)
-        : Math.round(this.offset / this.slideWidth);
+      this.currentPage = Math.round(this.offset / this.slideWidth);
     },
     /**
      * Re-compute the width of the carousel and its slides
@@ -872,23 +603,12 @@ export default {
       this.getSlideCount();
       this.getBrowserWidth();
       this.getCarouselWidth();
-      this.setCurrentPageInBounds();
     },
     /**
      * Re-compute the height of the carousel and its slides
      */
     computeCarouselHeight() {
       this.getCarouselHeight();
-    },
-    /**
-     * When the current page exceeds the carousel bounds, reset it to the maximum allowed
-     */
-    setCurrentPageInBounds() {
-      if (!this.canAdvanceForward && this.scrollPerPage) {
-        const setPage = this.pageCount - 1;
-        this.currentPage = setPage >= 0 ? setPage : 0;
-        this.offset = Math.max(0, Math.min(this.offset, this.maxOffset));
-      }
     },
     handleTransitionStart() {
       this.$emit('transitionStart');
@@ -900,11 +620,6 @@ export default {
     }
   },
   mounted() {
-    window.addEventListener(
-      'resize',
-      debounce(this.onResize, this.refreshRate)
-    );
-
     // setup the start event only if touch device or mousedrag activated
     if ((this.isTouch && this.touchDrag) || this.mouseDrag) {
       this.$refs['VueCarousel-wrapper'].addEventListener(
@@ -929,15 +644,9 @@ export default {
     );
 
     this.$emit('mounted');
-
-    // when autoplay direction is backward start from the last slide
-    if (this.autoplayDirection === 'backward') {
-      this.goToLastSlide();
-    }
   },
   beforeDestroy() {
     this.detachMutationObserver();
-    window.removeEventListener('resize', this.getBrowserWidth);
     this.$refs['VueCarousel-inner'].removeEventListener(
       this.transitionstart,
       this.handleTransitionStart
