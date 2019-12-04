@@ -1,13 +1,21 @@
 <template>
   <div id="app">
-    <carousel :per-page="1">
-      <slide>
-        Slide 1 Content
-      </slide>
-      <slide>
-        Slide 2 Content
-      </slide>
-    </carousel>
+
+    <div class="carousel">
+      <carousel :per-page="1">
+        <slide>
+          <img class="img" src="./assets/1.png">
+        </slide>
+        <slide>
+          <img class="img" src="./assets/2.png">
+        </slide>
+        <slide>
+          <img class="img" src="./assets/3.png">
+        </slide>
+      </carousel>
+
+    </div>
+
   </div>
 </template>
 
@@ -23,3 +31,16 @@ export default {
   }
 };
 </script>
+
+<style>
+  .carousel {
+    width: 80%;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .img {
+    display: block;
+    width: 100%;
+  }
+</style>
