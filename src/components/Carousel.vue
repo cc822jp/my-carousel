@@ -1,8 +1,5 @@
 <template>
-  <div
-    class="VueCarousel"
-    v-bind:class="{ 'VueCarousel--reverse': paginationPosition === 'top' }"
-  >
+  <div class="VueCarousel">
     <div class="VueCarousel-wrapper" ref="VueCarousel-wrapper">
       <div
         ref="VueCarousel-inner"
@@ -23,19 +20,14 @@
       </div>
     </div>
 
-    <slot name="navigation" v-if="navigationEnabled">
-      <navigation
-        v-if="isNavigationRequired"
-        :clickTargetSize="navigationClickTargetSize"
-        :nextLabel="navigationNextLabel"
-        :prevLabel="navigationPrevLabel"
-        @navigationclick="handleNavigation"
-      />
-    </slot>
+    <navigation
+      :clickTargetSize="navigationClickTargetSize"
+      :nextLabel="navigationNextLabel"
+      :prevLabel="navigationPrevLabel"
+      @navigationclick="handleNavigation"
+    />
 
-    <slot name="pagination" v-if="paginationEnabled">
-      <pagination @paginationclick="goToPage($event, 'pagination')" />
-    </slot>
+    <pagination @paginationclick="goToPage($event, 'pagination')" />
   </div>
 </template>
 <script>
@@ -87,14 +79,6 @@ export default {
   },
   props: {
     /**
-     * Slide transition easing
-     * Any valid CSS transition easing accepted
-     */
-    easing: {
-      type: String,
-      default: 'ease'
-    },
-    /**
      * Flag to make the carousel loop around when it reaches the end
      */
     loop: {
@@ -107,14 +91,6 @@ export default {
     navigationClickTargetSize: {
       type: Number,
       default: 8
-    },
-    /**
-     * Flag to render the navigation component
-     * (next/prev buttons)
-     */
-    navigationEnabled: {
-      type: Boolean,
-      default: false
     },
     /**
      * Text content of the navigation next button
@@ -147,27 +123,12 @@ export default {
       default: '#efefef'
     },
     /**
-     * Flag to render pagination component
-     */
-    paginationEnabled: {
-      type: Boolean,
-      default: true
-    },
-    /**
      * The padding inside each pagination dot
      * Pixel values are accepted
      */
     paginationPadding: {
       type: Number,
       default: 10
-    },
-    /**
-     * Configure the position for the pagination component.
-     * The possible values are: 'bottom', 'top', 'bottom-overlay' and 'top-overlay'
-     */
-    paginationPosition: {
-      type: String,
-      default: 'bottom'
     },
     /**
      * The size of each pagination dot
@@ -279,15 +240,9 @@ export default {
 
       return width / perPage;
     },
-    /**
-     * @return {Boolean} Is navigation required?
-     */
-    isNavigationRequired() {
-      return this.slideCount > this.currentPerPage;
-    },
     transitionStyle() {
       const speed = `${this.speed / 1000}s`;
-      return `${speed} ${this.easing} transform`;
+      return `${speed} ease transform`;
     }
   },
   methods: {
@@ -519,10 +474,6 @@ export default {
   position: relative;
 }
 
-.VueCarousel--reverse {
-  flex-direction: column-reverse;
-}
-
 .VueCarousel-wrapper {
   width: 100%;
   position: relative;
@@ -533,9 +484,5 @@ export default {
   display: flex;
   flex-direction: row;
   backface-visibility: hidden;
-}
-
-.VueCarousel-inner--center {
-  justify-content: center;
 }
 </style>

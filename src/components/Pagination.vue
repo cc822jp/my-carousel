@@ -2,9 +2,6 @@
   <div
     v-show="carousel.pageCount > 1"
     class="VueCarousel-pagination"
-    v-bind:class="{
-      [`VueCarousel-pagination--${paginationPositionModifierName}`]: paginationPositionModifierName
-    }"
   >
     <div
       class="VueCarousel-dot-container"
@@ -34,17 +31,6 @@ export default {
   name: 'pagination',
   inject: ['carousel'],
   computed: {
-    paginationPositionModifierName() {
-      const { paginationPosition } = this.carousel;
-      // guard to add only required class modifiers
-      if (paginationPosition.indexOf('overlay') < 0) return;
-      return paginationPosition;
-    },
-    paginationPropertyBasedOnPosition() {
-      return this.carousel.paginationPosition.indexOf('top') >= 0
-        ? 'bottom'
-        : 'top';
-    },
     paginationCount() {
       return this.carousel && this.carousel.scrollPerPage
         ? this.carousel.pageCount
@@ -110,9 +96,6 @@ export default {
     dotStyle(index) {
       const { carousel } = this;
       const basicBtnStyle = {};
-      basicBtnStyle[
-        `margin-${this.paginationPropertyBasedOnPosition}`
-      ] = `${carousel.paginationPadding * 2}px`;
 
       Object.assign(basicBtnStyle, {
         padding: `${carousel.paginationPadding}px`,
