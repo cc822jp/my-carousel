@@ -15,11 +15,15 @@
     </div>
 
     <navigation
-      @navigation-click-prev="handleNavigationPrev"
-      @navigation-click-next="handleNavigationNext"
+      @click-prev="prev"
+      @click-next="next"
     />
 
-    <pagination @paginationclick="goToPage($event, 'pagination')" />
+    <pagination
+      :count="slideCount"
+      :current="currentSlide"
+      @click-pagination="goto($event)"
+    />
   </div>
 </template>
 <script>
@@ -35,7 +39,7 @@ export default {
   data() {
     return {
       carouselWidth: 0,
-      currentPage: 0,
+      currentSlide: 0,
       offset: 0,
       slideCount: 0
     };
@@ -47,29 +51,10 @@ export default {
     };
   },
   props: {
-    /**
-     * The size of each pagination dot
-     * Pixel values are accepted
-     */
-    paginationSize: {
-      type: Number,
-      default: 10
-    },
-    /**
-     * Slide transition speed
-     * Number of milliseconds accepted
-     */
+    // アニメーションのスピード
     speed: {
       type: Number,
       default: 500
-    },
-    /**
-     * Name (tag) of slide component
-     * Overwrite when extending slide component
-     */
-    tagName: {
-      type: String,
-      default: 'slide'
     }
   },
   computed: {
@@ -88,13 +73,6 @@ export default {
       return Math.max(this.slideWidth * (this.slideCount - 1), 0);
     },
     /**
-     * Calculate the number of pages of slides
-     * @return {Number} Number of pages
-     */
-    pageCount() {
-      return this.slideCount;
-    },
-    /**
      * Calculate the width of each slide
      * @return {Number} Slide width
      */
@@ -107,29 +85,13 @@ export default {
     }
   },
   methods: {
-    /**
-     * @return {Number} The index of the next page
-     * */
-    getNextPage() {
-      if (this.currentPage < this.pageCount - 1) {
-        return this.currentPage + 1;
-      }
-      return 0;
+    next() {
+      const index = (this.currentSlide < this.slideCount - 1) ? this.currentSlide + 1 : 0;
+      this.goto(index);
     },
-    /**
-     * @return {Number} The index of the previous page
-     * */
-    getPreviousPage() {
-      if (this.currentPage > 0) {
-        return this.currentPage - 1;
-      }
-      return this.pageCount - 1;
-    },
-    handleNavigationPrev() {
-      this.goToPage(this.getPreviousPage());
-    },
-    handleNavigationNext() {
-      this.goToPage(this.getNextPage());
+    prev() {
+      const index = (this.currentSlide > 0) ? this.currentSlide - 1 : this.slideCount - 1;
+      this.goto(index);
     },
     /**
      * Get the width of the carousel DOM element
@@ -157,13 +119,13 @@ export default {
           this.$slots.default.filter(
             slot =>
               slot.tag &&
-              slot.tag.match(`^vue-component-\\d+-${this.tagName}$`) !== null
+              slot.tag.match(`^vue-component-\\d+-slide$`) !== null
           ).length) ||
         0;
     },
-    goToPage(page) {
+    goto(page) {
       this.offset = this.slideWidth * page;
-      this.currentPage = page;
+      this.currentSlide = page;
     },
     render() {
       // add extra slides depending on the momemtum speed
@@ -185,7 +147,7 @@ export default {
       this.offset = Math.max(0, Math.min(this.offset, this.maxOffset));
 
       // update the current page
-      this.currentPage = Math.round(this.offset / this.slideWidth);
+      this.currentSlide = Math.round(this.offset / this.slideWidth);
     }
   },
   mounted() {

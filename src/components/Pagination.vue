@@ -1,12 +1,14 @@
 <template>
-  <div class="VueCarousel-pagination">
-    <div class="VueCarousel-dot-container">
+  <div class="pagination">
+    <div class="dot-container">
       <div
-        v-for="(page, index) in paginationCount"
+        v-for="(page, index) in count"
         :key="`${page}_${index}`"
-        class="VueCarousel-dot"
-        :class="{ 'VueCarousel-dot--active': isCurrentDot(index) }"
-        v-on:click="goToPage(index)"
+        :class="{
+          'dot': true,
+          'dot--active': isCurrentDot(index)
+        }"
+        v-on:click="handleClick(index)"
       ></div>
     </div>
   </div>
@@ -15,39 +17,41 @@
 <script>
 export default {
   name: 'pagination',
-  inject: ['carousel'],
-  computed: {
-    paginationCount() {
-      return this.carousel && this.carousel.scrollPerPage
-        ? this.carousel.pageCount
-        : this.carousel.slideCount || 0;
+  props: {
+    count: {
+      type: Number,
+      default: 0
+    },
+    current: {
+      type: Number,
+      default: -1
     }
   },
   methods: {
-    goToPage(index) {
-      this.$emit('paginationclick', index);
+    handleClick(index) {
+      this.$emit('click-pagination', index);
     },
 
     isCurrentDot(index) {
-      return index === this.carousel.currentPage;
+      return index === this.current;
     }
   }
 };
 </script>
 
 <style scoped>
-.VueCarousel-pagination {
+.pagination {
   width: 100%;
   text-align: center;
 }
 
-.VueCarousel-dot-container {
+.dot-container {
   display: inline-block;
   margin: 8px auto 0;
   padding: 10px;
 }
 
-.VueCarousel-dot {
+.dot {
   display: inline-block;
   cursor: pointer;
   width: 8px;
@@ -57,7 +61,7 @@ export default {
   background-color: #efefef;
 }
 
-.VueCarousel-dot--active {
+.dot--active {
   background-color: #000;
 }
 </style>

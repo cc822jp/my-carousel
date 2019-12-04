@@ -16,10 +16,10 @@ export default {
   name: 'navigation',
   methods: {
     handleNavigationPrev() {
-      this.$emit('navigation-click-prev');
+      this.$emit('click-prev');
     },
     handleNavigationNext() {
-      this.$emit('navigation-click-next');
+      this.$emit('click-next');
     }
   }
 };
