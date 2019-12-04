@@ -38,21 +38,9 @@ export default {
     },
     dotContainerStyle() {
       const { carousel } = this;
-      if (carousel.maxPaginationDotCount === -1)
         return {
           'margin-top': `${carousel.paginationPadding * 2}px`
         };
-      const doublePadding = carousel.paginationPadding * 2;
-      const containerWidth =
-        carousel.maxPaginationDotCount *
-        (carousel.paginationSize + doublePadding);
-      return {
-        'margin-top': `${carousel.paginationPadding * 2}px`,
-        overflow: 'hidden',
-        width: `${containerWidth}px`,
-        margin: '0 auto',
-        'white-space': 'nowrap'
-      };
     }
   },
   methods: {
@@ -108,26 +96,7 @@ export default {
         }`
       });
 
-      if (carousel.maxPaginationDotCount === -1) return basicBtnStyle;
-
-      const eachDotsWidth =
-        carousel.paginationSize + carousel.paginationPadding * 2;
-      const maxReverse = carousel.pageCount - carousel.maxPaginationDotCount;
-      const translateAmount =
-        carousel.currentPage > maxReverse
-          ? maxReverse
-          : carousel.currentPage <= carousel.maxPaginationDotCount / 2
-          ? 0
-          : carousel.currentPage -
-            Math.ceil(carousel.maxPaginationDotCount / 2) +
-            1;
-      const transformWidth = 0 - eachDotsWidth * translateAmount;
-      return Object.assign(basicBtnStyle, {
-        '-webkit-transform': `translate3d(${transformWidth}px,0,0)`,
-        transform: `translate3d(${transformWidth}px,0,0)`,
-        '-webkit-transition': `-webkit-transform ${carousel.speed / 1000}s`,
-        transition: `transform ${carousel.speed / 1000}s`
-      });
+      return basicBtnStyle;
     }
   }
 };
