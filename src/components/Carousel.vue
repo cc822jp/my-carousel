@@ -139,13 +139,6 @@ export default {
       default: 10
     },
     /**
-     * Maximum number of slides displayed on each page
-     */
-    perPage: {
-      type: Number,
-      default: 2
-    },
-    /**
      * Slide transition speed
      * Number of milliseconds accepted
      */
@@ -202,14 +195,6 @@ export default {
       return this.loop || this.currentPage > 0;
     },
     /**
-     * Number of slides to display per page in the current context.
-     * This is constant unless responsive perPage option is set.
-     * @return {Number} The number of slides per page to display
-     */
-    currentPerPage() {
-      return this.perPage;
-    },
-    /**
      * The horizontal distance the inner wrapper is offset while navigating.
      * @return {Number} Pixel value of offset to apply
      */
@@ -221,24 +206,21 @@ export default {
      * @return {Number}
      */
     maxOffset() {
-      return Math.max(this.slideWidth * (this.slideCount - this.currentPerPage), 0);
+      return Math.max(this.slideWidth * (this.slideCount - 1), 0);
     },
     /**
      * Calculate the number of pages of slides
      * @return {Number} Number of pages
      */
     pageCount() {
-      return this.slideCount - this.currentPerPage + 1;
+      return this.slideCount;
     },
     /**
      * Calculate the width of each slide
      * @return {Number} Slide width
      */
     slideWidth() {
-      const width = this.carouselWidth;
-      const perPage = this.currentPerPage;
-
-      return width / perPage;
+      return this.carouselWidth;
     },
     transitionStyle() {
       const speed = `${this.speed / 1000}s`;
@@ -387,20 +369,13 @@ export default {
     },
     render() {
       // add extra slides depending on the momemtum speed
-      this.offset +=
-        Math.max(
-          -this.currentPerPage + 1,
-          Math.min(this.currentPerPage - 1)
-        ) * this.slideWidth;
+      this.offset += this.slideWidth;
 
       const width = this.slideWidth;
 
       // lock offset to either the nearest page, or to the last slide
-      const lastFullPageOffset =
-        width * Math.floor(this.slideCount / (this.currentPerPage - 1));
-      const remainderOffset =
-        lastFullPageOffset +
-        this.slideWidth * (this.slideCount % this.currentPerPage);
+      const lastFullPageOffset = width;
+      const remainderOffset = lastFullPageOffset + this.slideWidth * this.slideCount;
       if (this.offset > (lastFullPageOffset + remainderOffset) / 2) {
         this.offset = remainderOffset;
       } else {
