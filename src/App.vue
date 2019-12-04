@@ -3,7 +3,9 @@
     <div class="carousel">
       <carousel :navigation-enabled="true">
         <slide>
-          <img class="img" src="./assets/1.png">
+          <a href="http://www.google.com" target="_blank">
+            <img class="img" src="./assets/1.png">
+          </a>
         </slide>
         <slide>
           <img class="img" src="./assets/2.png">

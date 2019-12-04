@@ -3,9 +3,7 @@
     <div class="VueCarousel-wrapper" ref="VueCarousel-wrapper">
       <div
         ref="VueCarousel-inner"
-        :class="[
-          'VueCarousel-inner'
-        ]"
+        class="VueCarousel-inner"
         :style="{
           transform: `translate(${currentOffset}px, 0)`,
           transition: transitionStyle,
@@ -13,7 +11,6 @@
           'webkit-flex-basis': `${slideWidth}px`,
           'flex-basis': `${slideWidth}px`,
           visibility: slideWidth ? 'visible' : 'hidden',
-          height: `${currentHeight}`,
         }"
       >
         <slot></slot>
@@ -21,7 +18,7 @@
     </div>
 
     <navigation
-      :clickTargetSize="navigationClickTargetSize"
+      :clickTargetSize="8"
       :nextLabel="navigationNextLabel"
       :prevLabel="navigationPrevLabel"
       @navigationclick="handleNavigation"
@@ -34,41 +31,18 @@
 import Navigation from './Navigation.vue';
 import Pagination from './Pagination.vue';
 
-const transitionEndNames = {
-  onwebkittransitionend: 'webkitTransitionEnd',
-  onmoztransitionend: 'transitionend',
-  onotransitionend: 'oTransitionEnd otransitionend',
-  ontransitionend: 'transitionend'
-};
-
-const getTransitionEnd = () => {
-  for (let name in transitionEndNames) {
-    if (name in window) {
-      return transitionEndNames[name];
-    }
-  }
-};
-
 export default {
   name: 'carousel',
-  beforeUpdate() {
-    this.computeCarouselWidth();
-  },
   components: {
     Navigation,
     Pagination
   },
   data() {
     return {
-      browserWidth: null,
       carouselWidth: 0,
       currentPage: 0,
       offset: 0,
-      refreshRate: 16,
       slideCount: 0,
-      transitionstart: 'transitionstart',
-      transitionend: 'transitionend',
-      currentHeight: 'auto'
     };
   },
   // use `provide` to avoid `Slide` being nested with other components
@@ -78,13 +52,6 @@ export default {
     };
   },
   props: {
-    /**
-     * Amount of padding to apply around the label in pixels
-     */
-    navigationClickTargetSize: {
-      type: Number,
-      default: 8
-    },
     /**
      * Text content of the navigation next button
      */
@@ -146,25 +113,6 @@ export default {
     tagName: {
       type: String,
       default: 'slide'
-    },
-    /**
-     * Support for v-model functionality
-     */
-    value: {
-      type: Number
-    }
-  },
-  watch: {
-    value(val) {
-      if (val !== this.currentPage) {
-        this.goToPage(val);
-        this.render();
-      }
-    },
-    currentPage(val) {
-      this.$emit('pageChange', val);
-      this.$emit('page-change', val);
-      this.$emit('input', val);
     }
   },
   computed: {
@@ -231,56 +179,9 @@ export default {
         this.goToPage(this.getNextPage(), 'navigation');
       }
     },
-    /**
-     * A mutation observer is used to detect changes to the containing node
-     * in order to keep the magnet container in sync with the height its reference node.
-     */
-    attachMutationObserver() {
-      const MutationObserver =
-        window.MutationObserver ||
-        window.WebKitMutationObserver ||
-        window.MozMutationObserver;
-
-      if (MutationObserver) {
-        let config = {
-          attributes: true,
-          data: true
-        };
-        this.mutationObserver = new MutationObserver(() => {
-          this.$nextTick(() => {
-            this.computeCarouselWidth();
-            this.computeCarouselHeight();
-          });
-        });
-        if (this.$parent.$el) {
-          let carouselInnerElements = this.$el.getElementsByClassName(
-            'VueCarousel-inner'
-          );
-          for (let i = 0; i < carouselInnerElements.length; i++) {
-            this.mutationObserver.observe(carouselInnerElements[i], config);
-          }
-        }
-      }
-    },
     handleNavigation(direction) {
       this.advancePage(direction);
       this.$emit('navigation-click', direction);
-    },
-    /**
-     * Stop listening to mutation changes
-     */
-    detachMutationObserver() {
-      if (this.mutationObserver) {
-        this.mutationObserver.disconnect();
-      }
-    },
-    /**
-     * Get the current browser viewport width
-     * @return {Number} Browser"s width in pixels
-     */
-    getBrowserWidth() {
-      this.browserWidth = window.innerWidth;
-      return this.browserWidth;
     },
     /**
      * Get the width of the carousel DOM element
@@ -296,13 +197,6 @@ export default {
         }
       }
       return this.carouselWidth;
-    },
-    /**
-     * Get the maximum height of the carousel active slides
-     * @return {String} The carousel height
-     */
-    getCarouselHeight() {
-      return 'auto';
     },
     /**
      * Filter slot contents to slide instances and return length
@@ -358,58 +252,12 @@ export default {
 
       // update the current page
       this.currentPage = Math.round(this.offset / this.slideWidth);
-    },
-    /**
-     * Re-compute the width of the carousel and its slides
-     */
-    computeCarouselWidth() {
-      this.getSlideCount();
-      this.getBrowserWidth();
-      this.getCarouselWidth();
-    },
-    /**
-     * Re-compute the height of the carousel and its slides
-     */
-    computeCarouselHeight() {
-      this.getCarouselHeight();
-    },
-    handleTransitionStart() {
-      this.$emit('transitionStart');
-      this.$emit('transition-start');
-    },
-    handleTransitionEnd() {
-      this.$emit('transitionEnd');
-      this.$emit('transition-end');
     }
   },
   mounted() {
-    this.attachMutationObserver();
-    this.computeCarouselWidth();
-    this.computeCarouselHeight();
-
-    this.transitionstart = getTransitionEnd();
-    this.$refs['VueCarousel-inner'].addEventListener(
-      this.transitionstart,
-      this.handleTransitionStart
-    );
-    this.transitionend = getTransitionEnd();
-    this.$refs['VueCarousel-inner'].addEventListener(
-      this.transitionend,
-      this.handleTransitionEnd
-    );
-
+    this.getSlideCount();
+    this.getCarouselWidth();
     this.$emit('mounted');
-  },
-  beforeDestroy() {
-    this.detachMutationObserver();
-    this.$refs['VueCarousel-inner'].removeEventListener(
-      this.transitionstart,
-      this.handleTransitionStart
-    );
-    this.$refs['VueCarousel-inner'].removeEventListener(
-      this.transitionend,
-      this.handleTransitionEnd
-    );
   }
 };
 </script>

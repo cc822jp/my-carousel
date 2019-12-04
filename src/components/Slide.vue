@@ -119,10 +119,4 @@ export default {
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
   outline: none;
 }
-
-.VueCarousel-slide-adjustableHeight {
-  display: table;
-  flex-basis: auto;
-  width: 100%;
-}
 </style>
