@@ -7,10 +7,7 @@
         :style="{
           transform: `translate(${currentOffset}px, 0)`,
           transition: transitionStyle,
-          'ms-flex-preferred-size': `${slideWidth}px`,
-          'webkit-flex-basis': `${slideWidth}px`,
-          'flex-basis': `${slideWidth}px`,
-          visibility: slideWidth ? 'visible' : 'hidden'
+          'flex-basis': `${slideWidth}px`
         }"
       >
         <slot></slot>
@@ -50,30 +47,6 @@ export default {
     };
   },
   props: {
-    /**
-     * The fill color of the active pagination dot
-     * Any valid CSS color is accepted
-     */
-    paginationActiveColor: {
-      type: String,
-      default: '#000000'
-    },
-    /**
-     * The fill color of pagination dots
-     * Any valid CSS color is accepted
-     */
-    paginationColor: {
-      type: String,
-      default: '#efefef'
-    },
-    /**
-     * The padding inside each pagination dot
-     * Pixel values are accepted
-     */
-    paginationPadding: {
-      type: Number,
-      default: 10
-    },
     /**
      * The size of each pagination dot
      * Pixel values are accepted
