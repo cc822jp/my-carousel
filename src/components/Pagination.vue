@@ -1,14 +1,14 @@
 <template>
   <div class="pagination">
-    <div class="dot-container">
+    <div class="container">
       <div
         v-for="(page, index) in count"
         :key="`${page}_${index}`"
         :class="{
-          'dot': true,
-          'dot--active': isCurrentDot(index)
+          dot: true,
+          'dot--active': index === current
         }"
-        v-on:click="handleClick(index)"
+        v-on:click="$emit('click-pagination', index)"
       ></div>
     </div>
   </div>
@@ -26,15 +26,6 @@ export default {
       type: Number,
       default: -1
     }
-  },
-  methods: {
-    handleClick(index) {
-      this.$emit('click-pagination', index);
-    },
-
-    isCurrentDot(index) {
-      return index === this.current;
-    }
   }
 };
 </script>
@@ -45,10 +36,10 @@ export default {
   text-align: center;
 }
 
-.dot-container {
+.container {
   display: inline-block;
   margin: 8px auto 0;
-  padding: 10px;
+  padding: 0;
 }
 
 .dot {
@@ -62,6 +53,6 @@ export default {
 }
 
 .dot--active {
-  background-color: #000;
+  background-color: #999;
 }
 </style>

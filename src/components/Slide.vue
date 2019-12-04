@@ -5,15 +5,15 @@
 </template>
 
 <script>
-  export default {
-    name: 'slide'
-  };
+export default {
+  name: 'slide'
+};
 </script>
 
-<style>
-  .slide {
-    flex-basis: inherit;
-    flex-grow: 0;
-    flex-shrink: 0;
-  }
+<style scoped>
+.slide {
+  flex-basis: inherit;
+  flex-grow: 0;
+  flex-shrink: 0;
+}
 </style>

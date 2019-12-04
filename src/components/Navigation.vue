@@ -2,26 +2,18 @@
   <div class="navigation">
     <div
       class="button button--prev"
-      v-on:click.prevent="handleNavigationPrev"
+      v-on:click.prevent="$emit('click-prev')"
     ></div>
     <div
       class="button button--next"
-      v-on:click.prevent="handleNavigationNext"
+      v-on:click.prevent="$emit('click-next')"
     ></div>
   </div>
 </template>
 
 <script>
 export default {
-  name: 'navigation',
-  methods: {
-    handleNavigationPrev() {
-      this.$emit('click-prev');
-    },
-    handleNavigationNext() {
-      this.$emit('click-next');
-    }
-  }
+  name: 'navigation'
 };
 </script>
 
@@ -30,7 +22,7 @@ export default {
   position: absolute;
   cursor: pointer;
   top: 0;
-  bottom: 50px;
+  bottom: 26px;
   width: 32px;
   height: 32px;
   margin: auto;
@@ -56,15 +48,15 @@ export default {
   right: 4px;
 }
 
-.button.button--prev:after {
+.button--prev:after {
   margin-left: -2px;
   border-width: 8px 8px 8px 0;
   border-color: transparent #fff transparent transparent;
 }
 
-.button.button--next:after {
+.button--next:after {
   margin-right: -2px;
-  border-width: 8px 0 8px 10px;
+  border-width: 8px 0 8px 8px;
   border-color: transparent transparent transparent #fff;
 }
 </style>

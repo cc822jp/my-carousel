@@ -1,10 +1,8 @@
 <template>
   <div id="app">
-    <carousel>
+    <carousel :speed="500">
       <slide>
-        <a href="http://www.google.com" target="_blank">
-          <img class="img" src="./assets/1.png" />
-        </a>
+        <img class="img" src="./assets/1.png" />
       </slide>
       <slide>
         <img class="img" src="./assets/2.png" />
