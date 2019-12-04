@@ -1,5 +1,5 @@
 <template>
-  <div v-show="carousel.pageCount > 1" class="VueCarousel-pagination">
+  <div class="VueCarousel-pagination">
     <div class="VueCarousel-dot-container">
       <div
         v-for="(page, index) in paginationCount"
@@ -24,37 +24,12 @@ export default {
     }
   },
   methods: {
-    /**
-     * Change page by index
-     * @param {number} index
-     * return {void}
-     */
     goToPage(index) {
-      /**
-       * @event paginationclick
-       * @type {number}
-       */
       this.$emit('paginationclick', index);
     },
 
-    /**
-     * Check on current dot
-     * @param {number} index - dot index
-     * @return {boolean}
-     */
     isCurrentDot(index) {
       return index === this.carousel.currentPage;
-    },
-
-    /**
-     * Generate dot title
-     * @param {number} index - dot index
-     * @return {string}
-     */
-    getDotTitle(index) {
-      return this.carousel.$children[index].title
-        ? this.carousel.$children[index].title
-        : `Item ${index}`;
     }
   }
 };
